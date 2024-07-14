@@ -107,3 +107,52 @@ body {
   font-size: 2.5rem;
   font-weight: bold;
 }
+
+
+
+.analysis-page {
+  text-align: center;
+  background-color: #fff;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s, transform 0.3s;
+}
+
+.analysis-page:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  transform: translateY(-5px);
+}
+
+.analysis-page h1 {
+  color: #4CAF50;
+  margin-bottom: 20px;
+  font-size: 2.5rem;
+  font-weight: bold;
+}
+
+.button-generate {
+  display: inline-block;
+  padding: 15px 30px;
+  font-size: 1.2rem;
+  color: #fff;
+  background-color: #4CAF50;
+  border: none;
+  border-radius: 5px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s, box-shadow 0.3s, transform 0.3s;
+  cursor: pointer;
+  font-weight: bold;
+  text-decoration: none;
+  margin : 5px
+}
+
+.button-generate:hover {
+  background-color: #45a049;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  transform: translateY(-3px);
+}
+
+.button-generate:active {
+  transform: translateY(-1px);
+}
