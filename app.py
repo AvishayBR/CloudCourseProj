@@ -1,5 +1,6 @@
 import pandas as pd
 import sys
+
 print(sys.executable)
 import plotly.express as px
 from dash import Dash, dcc, html, Input, Output, State
@@ -14,20 +15,22 @@ from firebase import firebase
 import json
 
 
-
-
 def total_interactions(data):
     return len(data)
 
+
 def count_interactions_by_type(data):
     return data['Description'].value_counts()
+
 
 def interactions_over_time(data, interval='H'):
     data['Time'] = pd.to_datetime(data['Time'])
     return data.set_index('Time').resample(interval)['Description'].count()
 
+
 def interactions_by_user(data):
     return data['User'].value_counts()
+
 
 def session_durations(data):
     data['Time'] = pd.to_datetime(data['Time'])
@@ -35,9 +38,11 @@ def session_durations(data):
     sessions = data[data['Description'].str.contains('Open document|Close document')]
     sessions['Next_Time'] = sessions['Time'].shift(-1)
     sessions['Next_User'] = sessions['User'].shift(-1)
-    sessions = sessions[(sessions['Description'].str.contains('Open document')) & (sessions['User'] == sessions['Next_User'])]
+    sessions = sessions[
+        (sessions['Description'].str.contains('Open document')) & (sessions['User'] == sessions['Next_User'])]
     sessions['Session_Duration'] = sessions['Next_Time'] - sessions['Time']
     return sessions[['User', 'Time', 'Next_Time', 'Session_Duration']]
+
 
 def interactions_by_time_of_day(data):
     data['Time'] = pd.to_datetime(data['Time'])
@@ -83,7 +88,8 @@ def setup_page():
             multiple=False
         ),
         html.Div(id='output-data-upload'),
-        html.Button("Save", id="save-button", n_clicks=0, style={"display": "none", "margin": "auto", "margin-top": "20px"}, className = "save-button"),
+        html.Button("Save", id="save-button", n_clicks=0,
+                    style={"display": "none", "margin": "auto", "margin-top": "20px"}, className="save-button"),
         html.Div(id='save-state', style={"display": "none", "margin": "auto", "margin-top": "20px"}),
     ], className="setup-page")
 
@@ -98,7 +104,7 @@ def analysis_page():
                      not doc is None and not doc == ""],
             multi=True
         ),
-        html.Button("Generate", id='generate-button', n_clicks=0, className ="button-generate"),
+        html.Button("Generate", id='generate-button', n_clicks=0, className="button-generate"),
         html.Div(id='filtered-data-output')
     ], className="analysis-page")
 
@@ -115,7 +121,8 @@ def about_page():
         html.H1("About Page"),
         html.P("Welcome to the About page of our application."),
         html.P("This application is designed to analyze and monitor the work of OnShape teams."),
-        html.P("It processes log files in JSON format to provide insights into team performance, project progress, and collaboration efficiency."),
+        html.P(
+            "It processes log files in JSON format to provide insights into team performance, project progress, and collaboration efficiency."),
         html.P("Navigate through the different pages to explore visualizations and detailed statistics.")
     ], style={'padding': '20px'}, className="setup-page")
 
@@ -192,8 +199,8 @@ def render_page_content(pathname):
     [State('upload-data', 'filename'),
      State('upload-data', 'last_modified')]
 )
-
 def update_output(content, filename, date):
+    global current_data
     if content is not None:
         content_type, content_string = content.split(',')
         decoded = base64.b64decode(content_string)
@@ -201,9 +208,9 @@ def update_output(content, filename, date):
             if 'json' in filename:
                 # Assume that the user uploaded a JSON file
                 data = pd.read_json(io.StringIO(decoded.decode('utf-8')))
-                # result = FBconn.post('/shablool/', data.to_dict())
+                current_data = data
                 table = go.Figure(data=[go.Table(
-                    header = dict(values=list(data.columns),
+                    header=dict(values=list(data.columns),
                                 fill_color='paleturquoise',
                                 align='left'),
                     cells=dict(values=[data[col] for col in data.columns],
@@ -230,11 +237,11 @@ def update_output(content, filename, date):
     Output('save-button', 'style'),
     [Input('upload-state', 'children')]
 )
-
 def show_save_button(upload_state):
     if upload_state == 'uploaded':
         return {"display": "block", "margin": "auto", "margin-top": "20px"}
     return {"display": "none"}
+
 
 @app.callback(
     Output('save-state', 'children'),
@@ -243,7 +250,6 @@ def show_save_button(upload_state):
      State('upload-data', 'filename')]
 )
 def save_to_firebase(n_clicks, content, filename):
-    global FBconn
     if n_clicks > 0 and content is not None:
         content_type, content_string = content.split(',')
         decoded = base64.b64decode(content_string)
@@ -252,11 +258,13 @@ def save_to_firebase(n_clicks, content, filename):
                 data = json.loads(decoded.decode('utf-8'))
                 # Post to Firebase
                 FBconn.post('/shablool/', data)
+
                 return 'Data saved successfully'
         except Exception as e:
             print(e)
             return 'Error saving data'
     return ''
+
 
 # Callback to update the sidebar dynamically based on the file upload state
 @app.callback(
@@ -320,21 +328,27 @@ def generate_graph(n_clicks, selected_documents):
             ))
 
             interactions_by_type_counts = count_interactions_by_type(filtered_data)
-            interactions_by_type_fig = px.bar(interactions_by_type_counts, x=interactions_by_type_counts.index, y=interactions_by_type_counts.values,
-                                              labels={'index': 'Interaction Type', 'y': 'Count'}, title='Interactions by Type')
+            interactions_by_type_fig = px.bar(interactions_by_type_counts, x=interactions_by_type_counts.index,
+                                              y=interactions_by_type_counts.values,
+                                              labels={'index': 'Interaction Type', 'y': 'Count'},
+                                              title='Interactions by Type')
 
             interactions_over_time_counts = interactions_over_time(filtered_data)
-            interactions_over_time_fig = px.line(interactions_over_time_counts, x=interactions_over_time_counts.index, y=interactions_over_time_counts.values,
+            interactions_over_time_fig = px.line(interactions_over_time_counts, x=interactions_over_time_counts.index,
+                                                 y=interactions_over_time_counts.values,
                                                  labels={'index': 'Time', 'y': 'Count'}, title='Interactions Over Time')
 
             interactions_by_user_counts = interactions_by_user(filtered_data)
-            interactions_by_user_fig = px.bar(interactions_by_user_counts, x=interactions_by_user_counts.index, y=interactions_by_user_counts.values,
+            interactions_by_user_fig = px.bar(interactions_by_user_counts, x=interactions_by_user_counts.index,
+                                              y=interactions_by_user_counts.values,
                                               labels={'index': 'User', 'y': 'Count'}, title='Interactions by User')
 
-
             interactions_by_time_of_day_counts = interactions_by_time_of_day(filtered_data)
-            interactions_by_time_of_day_fig = px.bar(interactions_by_time_of_day_counts, x=interactions_by_time_of_day_counts.index, y=interactions_by_time_of_day_counts.values,
-                                                     labels={'index': 'Hour of Day', 'y': 'Count'}, title='Interactions by Time of Day')
+            interactions_by_time_of_day_fig = px.bar(interactions_by_time_of_day_counts,
+                                                     x=interactions_by_time_of_day_counts.index,
+                                                     y=interactions_by_time_of_day_counts.values,
+                                                     labels={'index': 'Hour of Day', 'y': 'Count'},
+                                                     title='Interactions by Time of Day')
 
             return html.Div([
                 dcc.Graph(figure=total_interactions_fig),
@@ -354,7 +368,8 @@ ngrok.set_auth_token(NGROK_AUTH_TOKEN)
 # Run the app with ngrok
 if __name__ == '__main__':
     # Connect to Firebase
-    FBconn = firebase.FirebaseApplication('https://cloudproject-5451f-default-rtdb.europe-west1.firebasedatabase.app/', None)
+    FBconn = firebase.FirebaseApplication('https://cloudproject-5451f-default-rtdb.europe-west1.firebasedatabase.app/',
+                                          None)
 
     # Start ngrok
     port = 8053  # Use a different port
