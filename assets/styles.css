@@ -86,7 +86,6 @@ body {
     box-shadow: 0
 }
 
-
 .setup-page {
   text-align: center;
   background-color: #fff;
@@ -108,7 +107,19 @@ body {
   font-weight: bold;
 }
 
+.setup-page .save-button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: background-color 0.3s, color 0.3s;
+}
 
+.setup-page .save-button:hover {
+  background-color: #45a049;
+  color: #d4edda;
+}
 
 .analysis-page {
   text-align: center;

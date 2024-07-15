@@ -10,6 +10,8 @@ import base64
 import io
 import datetime
 import plotly.graph_objects as go
+from firebase import firebase
+import json
 
 
 
@@ -80,7 +82,9 @@ def setup_page():
             style={"display": "flex", "justify-content": "space-around", "margin-top": "40px"},
             multiple=False
         ),
-        html.Div(id='output-data-upload')
+        html.Div(id='output-data-upload'),
+        html.Button("Save", id="save-button", n_clicks=0, style={"display": "none", "margin": "auto", "margin-top": "20px"}, className = "save-button"),
+        html.Div(id='save-state', style={"display": "none", "margin": "auto", "margin-top": "20px"}),
     ], className="setup-page")
 
 
@@ -104,6 +108,16 @@ def additional_page_2():
         html.H1("Additional Page 2"),
         html.P("This is the additional page 2.")
     ])
+
+
+def about_page():
+    return html.Div([
+        html.H1("About Page"),
+        html.P("Welcome to the About page of our application."),
+        html.P("This application is designed to analyze and monitor the work of OnShape teams."),
+        html.P("It processes log files in JSON format to provide insights into team performance, project progress, and collaboration efficiency."),
+        html.P("Navigate through the different pages to explore visualizations and detailed statistics.")
+    ], style={'padding': '20px'}, className="setup-page")
 
 
 # Initialize the Dash app
@@ -158,10 +172,7 @@ def render_page_content(pathname):
     elif pathname == "/setup":
         return setup_page()
     elif pathname == "/about":
-        return html.Div([
-            html.H1("About Page"),
-            html.P("This is the about page.")
-        ])
+        return about_page()
     elif pathname == "/analysis":
         return analysis_page()
     elif pathname == "/additional-page-2":
@@ -181,8 +192,8 @@ def render_page_content(pathname):
     [State('upload-data', 'filename'),
      State('upload-data', 'last_modified')]
 )
+
 def update_output(content, filename, date):
-    global current_data
     if content is not None:
         content_type, content_string = content.split(',')
         decoded = base64.b64decode(content_string)
@@ -190,9 +201,9 @@ def update_output(content, filename, date):
             if 'json' in filename:
                 # Assume that the user uploaded a JSON file
                 data = pd.read_json(io.StringIO(decoded.decode('utf-8')))
-                current_data = data
+                # result = FBconn.post('/shablool/', data.to_dict())
                 table = go.Figure(data=[go.Table(
-                    header=dict(values=list(data.columns),
+                    header = dict(values=list(data.columns),
                                 fill_color='paleturquoise',
                                 align='left'),
                     cells=dict(values=[data[col] for col in data.columns],
@@ -214,6 +225,38 @@ def update_output(content, filename, date):
             ]), ''
     return html.Div(), ''
 
+
+@app.callback(
+    Output('save-button', 'style'),
+    [Input('upload-state', 'children')]
+)
+
+def show_save_button(upload_state):
+    if upload_state == 'uploaded':
+        return {"display": "block", "margin": "auto", "margin-top": "20px"}
+    return {"display": "none"}
+
+@app.callback(
+    Output('save-state', 'children'),
+    [Input('save-button', 'n_clicks')],
+    [State('upload-data', 'contents'),
+     State('upload-data', 'filename')]
+)
+def save_to_firebase(n_clicks, content, filename):
+    global FBconn
+    if n_clicks > 0 and content is not None:
+        content_type, content_string = content.split(',')
+        decoded = base64.b64decode(content_string)
+        try:
+            if 'json' in filename:
+                data = json.loads(decoded.decode('utf-8'))
+                # Post to Firebase
+                FBconn.post('/shablool/', data)
+                return 'Data saved successfully'
+        except Exception as e:
+            print(e)
+            return 'Error saving data'
+    return ''
 
 # Callback to update the sidebar dynamically based on the file upload state
 @app.callback(
@@ -310,6 +353,9 @@ ngrok.set_auth_token(NGROK_AUTH_TOKEN)
 
 # Run the app with ngrok
 if __name__ == '__main__':
+    # Connect to Firebase
+    FBconn = firebase.FirebaseApplication('https://cloudproject-5451f-default-rtdb.europe-west1.firebasedatabase.app/', None)
+
     # Start ngrok
     port = 8053  # Use a different port
     public_url = ngrok.connect(port)
