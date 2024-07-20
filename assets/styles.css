@@ -107,7 +107,7 @@ body {
   font-weight: bold;
 }
 
-.setup-page .save-button {
+.setup-page .setup-button {
   background-color: #4CAF50;
   color: white;
   padding: 0.5rem 1rem;
@@ -116,7 +116,7 @@ body {
   transition: background-color 0.3s, color 0.3s;
 }
 
-.setup-page .save-button:hover {
+.setup-page .setup-button:hover {
   background-color: #45a049;
   color: #d4edda;
 }
