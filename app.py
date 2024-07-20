@@ -1,6 +1,5 @@
 import pandas as pd
 import sys
-
 print(sys.executable)
 import plotly.express as px
 from dash import Dash, dcc, html, Input, Output, State
@@ -12,8 +11,96 @@ import io
 import datetime
 import plotly.graph_objects as go
 from firebase import firebase
+import firebase_admin
+from firebase_admin import credentials, storage
 import json
+from nltk.stem import PorterStemmer
+import requests
+from bs4 import BeautifulSoup
+import re
 
+# ************* indexing functions *************
+def fetch_page(url):
+    response = requests.get(url)
+    if response.status_code == 200:
+        soup = BeautifulSoup(response.text, 'html.parser')
+        return soup
+    else:
+        return None
+
+
+def index_words(soup):
+    index = {}
+    words = re.findall(r'\w+', soup.get_text())
+    for word in words:
+        word = word.lower()
+        if word in index:
+            index[word] += 1
+        else:
+            index[word] = 1
+    return index
+
+def remove_stop_words(index):
+    stop_words = {'a', 'an', 'the', 'and', 'or', 'in', 'on', 'at', 'to'}
+    for stop_word in stop_words:
+        if stop_word in index:
+            del index[stop_word]
+    return index
+
+def apply_stemming(index):
+    stemmer = PorterStemmer()
+    stemmed_index = {}
+    for word, count in index.items():
+        stemmed_word = stemmer.stem(word)
+        if stemmed_word in stemmed_index:
+            stemmed_index[stemmed_word] += count
+        else:
+            stemmed_index[stemmed_word] = count
+    return stemmed_index
+    
+def search(query, index):
+    stemmer = PorterStemmer()
+    query_words = re.findall(r'\w+', query.lower())
+    results = {}
+    for word in query_words:
+        word = stemmer.stem(word)
+        if word in index:
+            results[word] = index[word]
+        else:
+          results[word] = 0
+    return results
+
+def search_engine(url, query):
+    soup = fetch_page(url)
+    if soup is None:
+        return None
+    index = index_words(soup)
+    index = remove_stop_words(index)
+    index = apply_stemming(index)
+    results = search(query, index)
+    return results
+
+# ************* end indexing functions *************
+
+
+
+
+# ************* uncomment this object when trying to run the app *************
+# ************* comment the object when trying to push for github *************
+
+# access_info = {
+#   "type": "service_account",
+#   "project_id": "cloudproject-5451f",
+#   "private_key_id": "fdec51fa9f9468330cd3128cbcb78075f1c933eb",
+#   "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC0k/PKnsSM2Bn2\nmTftVYXqiXm55vNc1jdrCSw7A5tu9RKdKWwLYRgBMXRgvO6FT1pRK4YIiXTxQqDc\n7RUZ6Xez/hUm4sPu9NjzWxNjRpByHAWzLNMSd39XNHDDE2g8WAuN1GYRLbwbFXtx\nh3fexoSfIKJhT2EFxc8rkarmH3c0f+Di+G38Z2WsUl3tiw/yg5yQMwhyti5X1ORS\nCbrw4B24+tokv3MsRQa3FTS273vXNvivA7e+nq5C/eUAkvNjBiEujP8xfc0We4YR\nC0wPBfee9Irv6eLJFcDCwjHM93COu57MVwdEwHC0DESp9ma1z83vdroTgMBFJs1M\nyontyhMlAgMBAAECggEABJQgXKCTFqza6WN9vBtjmd7LosQ2EJ2wKgjmE+tFx/FO\n14Qp7btdFQYXawo6wgaRDx3SQVdxwexHtZt7BqG990Jg3cb5B7PEejBOIh0hEQzE\n2DrD31G2D7kiYs/dcnNkfC1Izc/YxSlRtazuOt6tuZsuy/sis8mgNNhRQ9tWGm6h\n05B/0Dhy7G5//efXfuvyu61Od3NsCbVuRce5vmOWu0lvw22sTcGJtmrtVYkQZU0C\nTap+5rbuDaZIZ06ruweIcwB/luU1ruQL1zKiCcVOa/8qXtBKAjnkdi+TOtTcUuMG\nSDV4o/NQUd1yKTy3JldNgDOi8O8j8w3+TubnCVRkAQKBgQDsbLdqkkSueSCCh906\n0OLFJkkrt1YepVp/OIfw70aWpkHHuWDJtH4BlEZkEY/NIhKakgJReSzbAqNt9ZY/\n+KJMAAczMsTgFMid98a7ielzO/vUxLDVDXaEsndOAPfv43X0kNldgioU0RPx10gk\n5j0ucQ6ikYCrBD+PxwoneNeXUQKBgQDDh4CUu/dFaeh11SeK2I763FmvoWDur8lz\nkhGIRZ65meptwKDncWtfHM+lQzMatj8Du0D1wTN3siDW14rYp9zISl8D5r4H11pG\n2cRfxohqeu+htFIaufbxDCY53+EsX0/fbzRJ7+5wN3lJscDcRy8VAZOfyHVLfu5s\n1ZZFMbCxlQKBgDvGuREu7kKWyYt3Qo4uZkemiHWPIy0Ybasg5e4a8WQBoTwYOMqG\n4h0QGkQO1Kbu6HlAVWm4E4lEP4H7yANgn9hLYYamXXSyjI60KQEdu3KxRdjj6jnT\n75VZciS8xfNXNWmiffLQiEc/HaXV4p3BwNJPL34W/8s9hbyafIzCVvAhAoGAO8lH\n+LKMxi2/BaCaiarz9SLBTaGTqQgZGfx03e0jvm6grtRynrIgeaGuoEKu8qD9HZ/5\nGevsV9IglnCrpNmW+as76E56lp0znmxhzkM/XQegFBq17DQmnMfxPEsHZ/Dw1EoF\nfAIgLzHXJUBzzyb473xe7kF2FBKIxsB8RUYPWA0CgYEAiS21GsctCmKQwIMwRvY1\nMPSFVyfTomwXmXQPWEAIrbRsIJsGe3SnR3fukX9LMHAi5NAtMRp+cGMRO/onWUCM\nyNz7XIXXZXfhuGCKngfMYf3ubPuk9JmuxONNDN6ebLNWy+PcWyVdg8jFvIeTFyFp\nGGjGqDCAEvUP3b45wh3ItKI=\n-----END PRIVATE KEY-----\n",
+#   "client_email": "firebase-adminsdk-ze21r@cloudproject-5451f.iam.gserviceaccount.com",
+#   "client_id": "113989524318945156419",
+#   "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+#   "token_uri": "https://oauth2.googleapis.com/token",
+#   "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+#   "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-ze21r%40cloudproject-5451f.iam.gserviceaccount.com",
+#   "universe_domain": "googleapis.com"
+# }
 
 def total_interactions(data):
     return len(data)
@@ -75,8 +162,30 @@ def home_page():
     ], className="home-page")
 
 
+# Function to upload file to Firebase Storage
+def upload_to_firebase(filename, content):
+    bucket = storage.bucket()
+    blob = bucket.blob(filename)
+    blob.upload_from_string(content)
+    return blob.public_url
+
+# Function to get files from Firebase Storage
+def get_files_from_firebase():
+    bucket = storage.bucket()
+    blobs = bucket.list_blobs()
+    files = [blob.name for blob in blobs]
+    return files
+
+# Function to download file from Firebase Storage
+def download_from_firebase(filename):
+    bucket = storage.bucket()
+    blob = bucket.blob(filename)
+    content = blob.download_as_text()
+    return content
+
 def setup_page():
     return html.Div([
+      html.Div([
         html.H1("Data Setup"),
         dcc.Upload(
             id='upload-data',
@@ -89,9 +198,18 @@ def setup_page():
         ),
         html.Div(id='output-data-upload'),
         html.Button("Save", id="save-button", n_clicks=0,
-                    style={"display": "none", "margin": "auto", "margin-top": "20px"}, className="save-button"),
-        html.Div(id='save-state', style={"display": "none", "margin": "auto", "margin-top": "20px"}),
-    ], className="setup-page")
+                    style={"display": "none", "margin": "auto", "margin-top": "20px"}, className="setup-button"),
+        html.Div(id='save-state', style={"margin": "auto", "margin-top": "20px"}),
+    ], className="setup-page"),
+    html.Div([
+      html.H1("Search For A File"),
+      html.Button("Search", id="search-button", n_clicks=0,
+                  style={"margin": "auto", "margin-top": "20px"}, className="setup-button"),
+      dcc.Dropdown(id='file-dropdown', style={"display": "none", "margin": "auto", "margin-top": "20px"}),
+      html.Div(id='output-search-state'),
+      html.Div(id='output-analysis', style={"display": "none"}),
+    ], className="setup-page", style={"margin-top": "20px"})
+    ], className="setup-container")
 
 
 def analysis_page():
@@ -114,6 +232,17 @@ def additional_page_2():
         html.H1("Additional Page 2"),
         html.P("This is the additional page 2.")
     ])
+
+def page_index():
+    return html.Div([
+        html.H1("OnShape Glossary Index"),
+        html.H4("Insert your parameters in order to view frequency of words in the Glossary"),
+        dcc.Input(id='text-input', type='text', placeholder='Enter parameters here', style={"margin": "10px"}),
+        html.Button('Submit', id='submit-button', n_clicks=0, style={"margin": "10px"}, className="setup-button"),
+        html.Div(id='output-container', style={"margin-top": "20px"}),
+        html.Div(id='output-data-index'),
+        html.Div(id='index-state-table', style={"margin": "auto", "margin-top": "20px"}),
+    ], className="setup-page")
 
 
 def about_page():
@@ -149,6 +278,7 @@ sidebar = html.Div(
             children=[
                 dbc.NavLink("Home", href="/", active="exact", className="nav-link"),
                 dbc.NavLink("Setup", href="/setup", active="exact", className="nav-link"),
+                dbc.NavLink("Glossary Index", href="/index", active="exact", className="nav-link"),
                 dbc.NavLink("About", href="/about", active="exact", className="nav-link"),
             ],
             vertical=True,
@@ -184,12 +314,52 @@ def render_page_content(pathname):
         return analysis_page()
     elif pathname == "/additional-page-2":
         return additional_page_2()
+    elif pathname == "/index":
+        return page_index()
     else:
         return html.Div([
             html.H1("404: Not found"),
             html.P("The requested page was not found.")
         ])
 
+
+@app.callback(
+    [Output('output-container', 'children'),
+    Output('index-state-table', 'children')],
+    Input('submit-button', 'n_clicks'),
+    State('text-input', 'value')
+)
+def update_glossary_index(n_clicks, value):
+    glossary_url = 'https://cad.onshape.com/help/Content/Glossary/glossary.htm'
+    if n_clicks > 0:
+      if not value:
+        return 'Cannot index an empty input', ''
+      else:
+        result = search_engine(glossary_url, value)
+        if not result:
+          return f'Cannot find any index related to {value}', ''
+        
+        keys = list(result.keys())
+        values = list(result.values())
+
+
+
+        table = go.Figure(data=[go.Table(
+        header=dict(values=['term', 'frequency'],
+                    fill_color='paleturquoise',
+                    align='left'),
+        cells=dict(values=[keys, values],
+                   fill_color='lavender',
+                   align='left'))
+        ])
+        return '', html.Div([
+                    html.H5("The results"),
+                    dcc.Graph(
+                        id='table-index',
+                        figure=table
+                    )
+                ])
+    return '', ''
 
 # Callback to handle file upload and convert JSON to DataFrame
 @app.callback(
@@ -205,7 +375,7 @@ def update_output(content, filename, date):
         content_type, content_string = content.split(',')
         decoded = base64.b64decode(content_string)
         try:
-            if 'json' in filename:
+            if '.json' in filename:
                 # Assume that the user uploaded a JSON file
                 data = pd.read_json(io.StringIO(decoded.decode('utf-8')))
                 current_data = data
@@ -225,6 +395,10 @@ def update_output(content, filename, date):
                         figure=table
                     )
                 ]), 'uploaded'
+            else:
+                return html.Div([
+                'Must upload a file with format .json only'
+            ]), ''
         except Exception as e:
             print(e)
             return html.Div([
@@ -244,6 +418,18 @@ def show_save_button(upload_state):
 
 
 @app.callback(
+    Output('file-dropdown', 'options'),
+    Output('file-dropdown', 'style'),
+    Input('search-button', 'n_clicks')
+)
+def update_dropdown(n_clicks):
+    if n_clicks > 0:
+        files = get_files_from_firebase()
+        options = [{'label': file, 'value': file} for file in files]
+        return options, {"margin": "auto", "margin-top": "20px", "display": "block"}
+    return [], {"display": "none"}
+
+@app.callback(
     Output('save-state', 'children'),
     [Input('save-button', 'n_clicks')],
     [State('upload-data', 'contents'),
@@ -254,37 +440,72 @@ def save_to_firebase(n_clicks, content, filename):
         content_type, content_string = content.split(',')
         decoded = base64.b64decode(content_string)
         try:
-            if 'json' in filename:
-                data = json.loads(decoded.decode('utf-8'))
-                # Post to Firebase
-                FBconn.post('/shablool/', data)
-
+            if '.json' in filename:
+                new_data = json.loads(decoded.decode('utf-8'))
+                # Fetch existing data from Firebase
+                existing_data = FBconn.get('/shablool/', None)
+                # Handle case where existing_data is None
+                if existing_data is None:
+                    FBconn.post('/shablool/', new_data)
+                    data_url = upload_to_firebase(filename, decoded)
+                # Check if new data is already in the database
+                elif new_data not in existing_data.values():
+                    # Post to Firebase
+                    FBconn.post('/shablool/', new_data)
+                    data_url = upload_to_firebase(filename, decoded)
+                else:
+                    return 'Data already exists in the database'
                 return 'Data saved successfully'
         except Exception as e:
             print(e)
             return 'Error saving data'
     return ''
 
+@app.callback(
+    [Output('output-search-state', 'children'),
+    Output('output-analysis','children')],
+    Input('file-dropdown', 'value')
+)
+def display_file(filename):
+    global current_data
+    if filename:
+        content = download_from_firebase(filename)
+        data = pd.read_json(io.StringIO(content))
+        current_data = data
+        table = go.Figure(data=[go.Table(
+            header=dict(values=list(data.columns),
+                        fill_color='paleturquoise',
+                        align='left'),
+            cells=dict(values=[data[col].tolist() for col in data.columns],
+                       fill_color='lavender',
+                       align='left'))
+        ])
+        
+        return dcc.Graph(figure=table), 'uploaded'
+    return html.Div(), ''
 
 # Callback to update the sidebar dynamically based on the file upload state
 @app.callback(
     Output('sidebar-nav', 'children'),
-    [Input('upload-state', 'children')]
+    [Input('upload-state', 'children'),
+    Input('output-analysis', 'children')]
 )
-def update_sidebar(upload_state):
+def update_sidebar(upload_state, output_analysis):
     nav_links = [
         dbc.NavLink("Home", href="/", active="exact", className="nav-link"),
         dbc.NavLink("Setup", href="/setup", active="exact", className="nav-link"),
 
     ]
-    if upload_state == 'uploaded':
+    if (upload_state == 'uploaded' or output_analysis == 'uploaded'):
         nav_links.extend([
             dbc.NavLink("Analysis & Statistics", href="/analysis", active="exact", className="nav-link"),
             dbc.NavLink("Additional Page 2", href="/additional-page-2", active="exact", className="nav-link"),
+            dbc.NavLink("Glossary Index", href="/index", active="exact", className="nav-link"),
             dbc.NavLink("About", href="/about", active="exact", className="nav-link")
         ])
     else:
         nav_links.extend([
+            dbc.NavLink("Glossary Index", href="/index", active="exact", className="nav-link"),
             dbc.NavLink("About", href="/about", active="exact", className="nav-link")
         ])
     return nav_links
@@ -368,8 +589,9 @@ ngrok.set_auth_token(NGROK_AUTH_TOKEN)
 # Run the app with ngrok
 if __name__ == '__main__':
     # Connect to Firebase
-    FBconn = firebase.FirebaseApplication('https://cloudproject-5451f-default-rtdb.europe-west1.firebasedatabase.app/',
-                                          None)
+    FBconn = firebase.FirebaseApplication('https://cloudproject-5451f-default-rtdb.europe-west1.firebasedatabase.app/', None)
+    cred = credentials.Certificate(access_info)
+    firebase_admin.initialize_app(cred, {'storageBucket': 'cloudproject-5451f.appspot.com'})                              
 
     # Start ngrok
     port = 8053  # Use a different port
