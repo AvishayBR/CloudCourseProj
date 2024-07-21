@@ -1,3 +1,5 @@
+/* Existing styles.css */
+
 body {
     background-color: #f9f9f9;
     color: #333;
@@ -83,7 +85,6 @@ body {
 
 .image-3d:hover {
     transform: translateY(-10px);
-    box-shadow: 0
 }
 
 .setup-page {
@@ -155,7 +156,7 @@ body {
   cursor: pointer;
   font-weight: bold;
   text-decoration: none;
-  margin : 5px
+  margin: 5px;
 }
 
 .button-generate:hover {
@@ -167,6 +168,7 @@ body {
 .button-generate:active {
   transform: translateY(-1px);
 }
+
 .contributors-container {
     display: flex;
     justify-content: center;
@@ -196,4 +198,69 @@ body {
 .contact-section {
     margin-top: 40px;
     text-align: center;
+}
+
+/* Updated podium styles */
+.container.podium {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    margin-top: 20px;
+    gap: 20px;
+}
+
+.podium__item {
+    width: 200px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+    text-align: center;
+    padding: 10px;
+}
+
+.podium__item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.podium__rank {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 35px;
+    color: #fff;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.podium__city {
+    margin-top: 10px;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.podium__number {
+    width: 27px;
+    height: 75px;
+}
+
+.podium .first {
+    min-height: 300px;
+    background: linear-gradient(333deg, rgba(255,172,37,1) 0%, rgba(254,207,51,1) 13%, rgba(254,224,51,1) 53%, rgba(255,172,37,1) 100%);
+}
+
+.podium .second {
+    min-height: 200px;
+    background: linear-gradient(333deg, rgba(37, 99, 255, 1) 0%, rgba(51, 130, 254, 1) 13%, rgba(51, 157, 254, 1) 53%, rgba(37, 99, 255, 1) 100%);
+}
+
+.podium .third {
+    min-height: 100px;
+    background: linear-gradient(333deg, rgba(37, 255, 37, 1) 0%, rgba(51, 254, 51, 1) 13%, rgba(51, 254, 97, 1) 53%, rgba(37, 255, 37, 1) 100%);
+}
+.podium-heading {
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    color: #333;
+    font-weight: bold;
 }

@@ -56,3 +56,15 @@ def interactions_by_time_of_day(data):
     data['Time'] = pd.to_datetime(data['Time'])
     data['Hour'] = data['Time'].dt.hour
     return data.groupby('Hour')['Description'].count()
+
+def top_performers(data):
+    data = data.drop(columns=['Time', 'Document','Tab'])
+    unique_students = data['User'].unique().tolist()
+    students_iterations = dict()
+    for student in unique_students:
+        student_data = data[data['User'] == student]
+        delete_count = student_data['Description'].str.contains('Delete').sum()
+        total_rows = len(student_data)
+        ratio = 100 - (delete_count / total_rows) * 100
+        students_iterations[student] = ratio
+    return students_iterations

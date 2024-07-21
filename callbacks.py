@@ -11,6 +11,8 @@ from firebase_utils import upload_to_firebase, get_files_from_firebase, download
 from indexing_utils import search_engine
 import data_cache
 import graph_utils
+
+
 def register_callbacks(app, FBconn):
     @app.callback(
         [Output('output-container', 'children'),
@@ -181,7 +183,7 @@ def register_callbacks(app, FBconn):
         if (upload_state == 'uploaded' or output_analysis == 'uploaded'):
             nav_links.extend([
                 dbc.NavLink("Analysis & Statistics", href="/analysis", active="exact", className="nav-link"),
-                dbc.NavLink("Additional Page 2", href="/additional-page-2", active="exact", className="nav-link"),
+                dbc.NavLink("Students Quality Board", href="/quality", active="exact", className="nav-link"),
                 dbc.NavLink("Glossary Index", href="/index", active="exact", className="nav-link"),
                 dbc.NavLink("About", href="/about", active="exact", className="nav-link")
             ])
@@ -265,4 +267,52 @@ def register_callbacks(app, FBconn):
                 ])
         return html.Div("No data selected or no data available for the selected documents.")
 
+    @app.callback(
+        Output('quality-data-output', 'children'),
+        [Input('generate-quality-button', 'n_clicks')],
+        [State('document-dropdown', 'value')]
+    )
+    def generate_quality_graph(n_clicks, selected_documents):
+        if n_clicks > 0 and selected_documents:
+            current_data = data_cache.get_current_data()
+            filtered_data = current_data[current_data['Document'].isin(selected_documents)]
+            deleting_percentage = graph_utils.top_performers(filtered_data)
+            df = pd.DataFrame(list(deleting_percentage.items()), columns=['Student', 'Quality Percentage'])
 
+            # Sort the DataFrame by 'Value' in descending order and get the top 3
+            top_3 = df.nlargest(3, 'Quality Percentage')
+
+            # SVG for the first place
+            first_place_svg = '''
+        <svg class="podium__number" viewBox="0 0 27.476 75.03" xmlns="http://www.w3.org/2000/svg">
+            <g transform="matrix(1, 0, 0, 1, 214.957736, -43.117417)">
+                <path class="st8" d="M -198.928 43.419 C -200.528 47.919 -203.528 51.819 -207.828 55.219 C -210.528 57.319 -213.028 58.819 -215.428 60.019 L -215.428 72.819 C -210.328 70.619 -205.628 67.819 -201.628 64.119 L -201.628 117.219 L -187.528 117.219 L -187.528 43.419 L -198.928 43.419 L -198.928 43.419 Z" style="fill: #000;"/>
+            </g>
+        </svg>
+        '''
+
+            # Create a podium display
+            podium = html.Div(className="container podium", children=[
+                html.Div(className="podium__item", children=[
+                    html.P(className="podium__city", children=top_3.iloc[1]['Student'] if len(top_3) > 1 else ""),
+                    html.Div(className="podium__rank second", children="2")
+                ]),
+                html.Div(className="podium__item", children=[
+                    html.P(className="podium__city", children=top_3.iloc[0]['Student'] if len(top_3) > 0 else ""),
+                    html.Div(className="podium__rank first", children="1")
+                ]),
+                html.Div(className="podium__item", children=[
+                    html.P(className="podium__city", children=top_3.iloc[2]['Student'] if len(top_3) > 2 else ""),
+                    html.Div(className="podium__rank third", children="3")
+                ])
+            ])
+
+            fig = px.bar(df, x='Student', y='Quality Percentage', title='Students Quality Bar')
+
+            return html.Div([
+                html.H3("Top Performers Podium", className="podium-heading"),
+                podium,
+                dcc.Graph(figure=fig)
+            ])
+
+    return html.Div()

@@ -11,6 +11,7 @@ from setup_page import setup_page
 from analysis_page import analysis_page
 from glossary_index_page import page_index
 from about_page import about_page
+from quality_page import quality_page
 from firebase_utils import upload_to_firebase, get_files_from_firebase, download_from_firebase
 from callbacks import register_callbacks
 import data_cache
@@ -76,6 +77,8 @@ def render_page_content(pathname):
         return analysis_page(data_cache.get_current_data())
     elif pathname == "/index":
         return page_index()
+    elif pathname == "/quality":
+        return quality_page(data_cache.get_current_data())
     else:
         return html.Div([
             html.H1("404: Not found"),
