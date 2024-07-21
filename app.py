@@ -88,19 +88,19 @@ def search_engine(url, query):
 # ************* uncomment this object when trying to run the app *************
 # ************* comment the object when trying to push for github *************
 
-# access_info = {
-#   "type": "service_account",
-#   "project_id": "cloudproject-5451f",
-#   "private_key_id": "fdec51fa9f9468330cd3128cbcb78075f1c933eb",
-#   "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC0k/PKnsSM2Bn2\nmTftVYXqiXm55vNc1jdrCSw7A5tu9RKdKWwLYRgBMXRgvO6FT1pRK4YIiXTxQqDc\n7RUZ6Xez/hUm4sPu9NjzWxNjRpByHAWzLNMSd39XNHDDE2g8WAuN1GYRLbwbFXtx\nh3fexoSfIKJhT2EFxc8rkarmH3c0f+Di+G38Z2WsUl3tiw/yg5yQMwhyti5X1ORS\nCbrw4B24+tokv3MsRQa3FTS273vXNvivA7e+nq5C/eUAkvNjBiEujP8xfc0We4YR\nC0wPBfee9Irv6eLJFcDCwjHM93COu57MVwdEwHC0DESp9ma1z83vdroTgMBFJs1M\nyontyhMlAgMBAAECggEABJQgXKCTFqza6WN9vBtjmd7LosQ2EJ2wKgjmE+tFx/FO\n14Qp7btdFQYXawo6wgaRDx3SQVdxwexHtZt7BqG990Jg3cb5B7PEejBOIh0hEQzE\n2DrD31G2D7kiYs/dcnNkfC1Izc/YxSlRtazuOt6tuZsuy/sis8mgNNhRQ9tWGm6h\n05B/0Dhy7G5//efXfuvyu61Od3NsCbVuRce5vmOWu0lvw22sTcGJtmrtVYkQZU0C\nTap+5rbuDaZIZ06ruweIcwB/luU1ruQL1zKiCcVOa/8qXtBKAjnkdi+TOtTcUuMG\nSDV4o/NQUd1yKTy3JldNgDOi8O8j8w3+TubnCVRkAQKBgQDsbLdqkkSueSCCh906\n0OLFJkkrt1YepVp/OIfw70aWpkHHuWDJtH4BlEZkEY/NIhKakgJReSzbAqNt9ZY/\n+KJMAAczMsTgFMid98a7ielzO/vUxLDVDXaEsndOAPfv43X0kNldgioU0RPx10gk\n5j0ucQ6ikYCrBD+PxwoneNeXUQKBgQDDh4CUu/dFaeh11SeK2I763FmvoWDur8lz\nkhGIRZ65meptwKDncWtfHM+lQzMatj8Du0D1wTN3siDW14rYp9zISl8D5r4H11pG\n2cRfxohqeu+htFIaufbxDCY53+EsX0/fbzRJ7+5wN3lJscDcRy8VAZOfyHVLfu5s\n1ZZFMbCxlQKBgDvGuREu7kKWyYt3Qo4uZkemiHWPIy0Ybasg5e4a8WQBoTwYOMqG\n4h0QGkQO1Kbu6HlAVWm4E4lEP4H7yANgn9hLYYamXXSyjI60KQEdu3KxRdjj6jnT\n75VZciS8xfNXNWmiffLQiEc/HaXV4p3BwNJPL34W/8s9hbyafIzCVvAhAoGAO8lH\n+LKMxi2/BaCaiarz9SLBTaGTqQgZGfx03e0jvm6grtRynrIgeaGuoEKu8qD9HZ/5\nGevsV9IglnCrpNmW+as76E56lp0znmxhzkM/XQegFBq17DQmnMfxPEsHZ/Dw1EoF\nfAIgLzHXJUBzzyb473xe7kF2FBKIxsB8RUYPWA0CgYEAiS21GsctCmKQwIMwRvY1\nMPSFVyfTomwXmXQPWEAIrbRsIJsGe3SnR3fukX9LMHAi5NAtMRp+cGMRO/onWUCM\nyNz7XIXXZXfhuGCKngfMYf3ubPuk9JmuxONNDN6ebLNWy+PcWyVdg8jFvIeTFyFp\nGGjGqDCAEvUP3b45wh3ItKI=\n-----END PRIVATE KEY-----\n",
-#   "client_email": "firebase-adminsdk-ze21r@cloudproject-5451f.iam.gserviceaccount.com",
-#   "client_id": "113989524318945156419",
-#   "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-#   "token_uri": "https://oauth2.googleapis.com/token",
-#   "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-#   "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-ze21r%40cloudproject-5451f.iam.gserviceaccount.com",
-#   "universe_domain": "googleapis.com"
-# }
+access_info = {
+    "type": "service_account",
+    "project_id": "cloudcourseproject-d1895",
+    "private_key_id": "45c14d06d6e8d9972cc313c45df2bb8772a27871",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC5WbT0ofhOulC1\nANZrG8aRDQrnOcdBLIDxZcLEXsV2xTecG7EruU3Qm8rcwNZyRy0enhiQ1fl9BPcX\nqNDE9Vsn8xSOnEY/7tNMIGy6bSWSZNSXNaXGnaM9mzuHzd/hpgqiMRasHW53ImEj\n6W3+H/A9C97l2xRK6PoIT90GCDyLBoGQr3QiUKPgeBG0Wz06oUsvCiV/Nw0J3hqr\nCd+JVamkShvC2oNhaL5HNlSZAvfx+MI3znKNlbqRSO6ZrBGcagzGhPxl1SICq3FS\n4bokQJzD2KgMd/IqPYpG5vEILwm0QEkHVF4LdnY6JARvz/Z9NeTN94nWoDGX0c7g\nbZR4oot3AgMBAAECggEAW5frBmDsFeuYannpe7CUJaXuV2mD/78AUUpaPzQeHJ1E\n583/dX3y6D20t/ZLgtmNgG3b8ebrjU5g1L5FvK8KxukmpXqwdHOO0zXKxS2evYM6\nUybdrxLDUnRdrLSeCCJHavMbIx7AMfs5ScfW5RffXit5kNj8ZDBRLr5YmNyFHqXV\nw0UDKYwjeDSI+CAX0cSgBo+AJLzunztLlxs6dBa/im3h94zS1XJc2gz4eBxoq19p\nAucmoYWwp5pyfLzc3QI9+2c7X39kxceIhr5krr7FyA9eX9oXhwtyIii4BDgVk5w7\nQG/ztVmu7Efl6N3m5ZJN+5fQSfEoUEMbt+9VoU5YUQKBgQDz3U0JA5i0TpQf4HD8\nMrh2yZrlW89tFqF2CruWp8kqk7nX2qVUQKqI/ok6IMW9rFVaBUFAg0nTUB+tnzf3\nt7Xeazi2BqdEsfbGg7BFjjUUHjwOzH5NKC3zU96D9GcUyUR/rT+FRKUbhBliItCj\nbsjFFr5ILpv6fTFqMuwI7exbhQKBgQDCkvghDIsXtPytSgyv5xHve+dA3ReigoyB\nUiNdrPkwLsukURCI/F9FW9KZVK1XTLRV83idjc/AYpLDriWsouWTyrpldoHzuTwC\nGypYg/7BdX6zJtWu7WP0Xp/QhrK165X3w0BOLphH1ce2MtmrJmI4EBbfRueA6AqV\noYOmsnjlywKBgQCYXz1EFZgziSmqZT2Th0mVB1EeYGhR3CMUs44Ui0/5p4YmZjqJ\nU0J7CLfLtzB23BgUgFYOLjpRq62veV2qDYK4r7wmmC+pj50G2r+oJjvqDx4tjP6Z\nzTIw6MWPI4XJCh0fvauD5KlZcQe/NsuwYodWBmjshxr0v4bBuYGb7rWRVQKBgQC8\nMyfp35YSIi9c9gj7g4dnmvL9XFzmBVweIfKvQwXsQvcaQoa52VHVZpF3Wd4oWLr9\nf/gkfOx761yGBUXPi+h/YVGVnmDn+z091ETLRTD+ssUQR/nbryZFUdlG+2KUcACo\nm6TxekQ1B2SaqOi9kOzjyTw2TwDRQKAsRwNuE6a4rQKBgFJw462fhT4yLqfmZzf3\nYkQCt7vmIXH70wYG6zHjbmmwYvj0Btz49oiGLfHM23XUr0posmj8Dv2OS1Q2G+3z\noDBMZ+/918HGmo7H/ab0GpaejnFPv88bglQ+DxdzPTUrOOl5t33WbWfkrOmyI32c\ndue2XIGabShdjg+VVs3woSth\n-----END PRIVATE KEY-----\n",
+    "client_email": "firebase-adminsdk-7ziaq@cloudcourseproject-d1895.iam.gserviceaccount.com",
+    "client_id": "114928397654101951903",
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-7ziaq%40cloudcourseproject-d1895.iam.gserviceaccount.com",
+    "universe_domain": "googleapis.com"
+}
 
 def total_interactions(data):
     return len(data)
@@ -583,15 +583,15 @@ def generate_graph(n_clicks, selected_documents):
 
 
 # Get your ngrok authtoken from https://dashboard.ngrok.com/get-started/your-authtoken
-NGROK_AUTH_TOKEN = '2jBmzuJoeRViFBXDX6EoozJkJ0w_5SyaeULeLKBpARpvbw48X'
+NGROK_AUTH_TOKEN = '2j0ipKmlgFqppERAFqNinYRb1FH_5cmC5sMfw4DX9PdqrrDQ1'
 ngrok.set_auth_token(NGROK_AUTH_TOKEN)
 
 # Run the app with ngrok
 if __name__ == '__main__':
     # Connect to Firebase
-    FBconn = firebase.FirebaseApplication('https://cloudproject-5451f-default-rtdb.europe-west1.firebasedatabase.app/', None)
+    FBconn = firebase.FirebaseApplication('https://cloudcourseproject-d1895-default-rtdb.europe-west1.firebasedatabase.app/', None)
     cred = credentials.Certificate(access_info)
-    firebase_admin.initialize_app(cred, {'storageBucket': 'cloudproject-5451f.appspot.com'})                              
+    firebase_admin.initialize_app(cred, {'storageBucket': 'cloudcourseproject-d1895.appspot.com'})
 
     # Start ngrok
     port = 8053  # Use a different port
