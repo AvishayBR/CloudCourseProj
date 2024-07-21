@@ -16,6 +16,7 @@ from callbacks import register_callbacks
 import data_cache
 # Initialize the Dash app
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+app.title = "Cloud Course Project"
 current_data = data_cache.get_current_data()
 
 
