@@ -12,8 +12,8 @@ from indexing_utils import search_engine
 import data_cache
 import graph_utils
 
-
 def register_callbacks(app, FBconn):
+
     @app.callback(
         [Output('output-container', 'children'),
          Output('index-state-table', 'children')],
@@ -65,6 +65,7 @@ def register_callbacks(app, FBconn):
                 if '.json' in filename:
                     # Assume that the user uploaded a JSON file
                     data = pd.read_json(io.StringIO(decoded.decode('utf-8')))
+                    data['Time'] = pd.to_datetime(data['Time'])  # Convert 'Time' column to datetime
                     data_cache.update_current_data(data)
                     table = go.Figure(data=[go.Table(
                         header=dict(values=list(data.columns),
@@ -155,6 +156,7 @@ def register_callbacks(app, FBconn):
         if filename:
             content = download_from_firebase(filename)
             data = pd.read_json(io.StringIO(content))
+            data['Time'] = pd.to_datetime(data['Time'])  # Convert 'Time' column to datetime
             data_cache.update_current_data(data)
             table = go.Figure(data=[go.Table(
                 header=dict(values=list(data.columns),
@@ -197,26 +199,39 @@ def register_callbacks(app, FBconn):
     @app.callback(
         Output('filtered-data-output', 'children'),
         [Input('generate-button', 'n_clicks')],
-        [State('document-dropdown', 'value')]
+        [State('document-dropdown', 'value'),
+         State('user-dropdown', 'value'),
+         State('date-picker-range', 'start_date'),
+         State('date-picker-range', 'end_date')]
     )
-    def generate_graph(n_clicks, selected_documents):
-        if n_clicks > 0 and selected_documents:
+    def generate_graph(n_clicks, selected_documents, selected_users, start_date, end_date):
+        if n_clicks > 0:
             current_data = data_cache.get_current_data()
-            filtered_data = current_data[current_data['Document'].isin(selected_documents)]
-            if not filtered_data.empty:
+
+            if selected_documents:
+                current_data = current_data[current_data['Document'].isin(selected_documents)]
+
+            if selected_users:
+                current_data = current_data[current_data['User'].isin(selected_users)]
+
+            if start_date and end_date:
+                current_data['Time'] = pd.to_datetime(current_data['Time'])
+                current_data = current_data[(current_data['Time'] >= start_date) & (current_data['Time'] <= end_date)]
+
+            if not current_data.empty:
                 # Ensure 'Time' is in datetime format
-                filtered_data['Time'] = pd.to_datetime(filtered_data['Time'])
+                current_data['Time'] = pd.to_datetime(current_data['Time'])
 
                 # Calculate the time difference between consecutive entries for each user
-                filtered_data = filtered_data.sort_values(by=['User', 'Time'])
-                filtered_data['Time_Diff'] = filtered_data.groupby('User')['Time'].diff().fillna(
+                current_data = current_data.sort_values(by=['User', 'Time'])
+                current_data['Time_Diff'] = current_data.groupby('User')['Time'].diff().fillna(
                     pd.Timedelta(seconds=0))
 
                 # Convert 'Time_Diff' to total seconds
-                filtered_data['Time_Spent'] = filtered_data['Time_Diff'].dt.total_seconds()
+                current_data['Time_Spent'] = current_data['Time_Diff'].dt.total_seconds()
 
                 # Summarize the time spent by each user for each document
-                user_document_time_spent = filtered_data.groupby(['User', 'Document'])['Time_Spent'].sum().reset_index()
+                user_document_time_spent = current_data.groupby(['User', 'Document'])['Time_Spent'].sum().reset_index()
                 user_document_time_spent['Time_Spent_hours'] = user_document_time_spent['Time_Spent'] / 3600
 
                 # Create the bar chart for time spent by each user on each document
@@ -228,29 +243,29 @@ def register_callbacks(app, FBconn):
                 # Generate other required plots
                 total_interactions_fig = go.Figure(go.Indicator(
                     mode="number",
-                    value=graph_utils.total_interactions(filtered_data),
+                    value=graph_utils.total_interactions(current_data),
                     title={"text": "Total Interactions"}
                 ))
 
-                interactions_by_type_counts = graph_utils.count_interactions_by_type(filtered_data)
+                interactions_by_type_counts = graph_utils.count_interactions_by_type(current_data)
                 interactions_by_type_fig = px.bar(interactions_by_type_counts, x=interactions_by_type_counts.index,
                                                   y=interactions_by_type_counts.values,
                                                   labels={'index': 'Interaction Type', 'y': 'Count'},
                                                   title='Interactions by Type')
 
-                interactions_over_time_counts = graph_utils.interactions_over_time(filtered_data)
+                interactions_over_time_counts = graph_utils.interactions_over_time(current_data)
                 interactions_over_time_fig = px.line(interactions_over_time_counts,
                                                      x=interactions_over_time_counts.index,
                                                      y=interactions_over_time_counts.values,
                                                      labels={'index': 'Time', 'y': 'Count'},
                                                      title='Interactions Over Time')
 
-                interactions_by_user_counts = graph_utils.interactions_by_user(filtered_data)
+                interactions_by_user_counts = graph_utils.interactions_by_user(current_data)
                 interactions_by_user_fig = px.bar(interactions_by_user_counts, x=interactions_by_user_counts.index,
                                                   y=interactions_by_user_counts.values,
                                                   labels={'index': 'User', 'y': 'Count'}, title='Interactions by User')
 
-                interactions_by_time_of_day_counts = graph_utils.interactions_by_time_of_day(filtered_data)
+                interactions_by_time_of_day_counts = graph_utils.interactions_by_time_of_day(current_data)
                 interactions_by_time_of_day_fig = px.bar(interactions_by_time_of_day_counts,
                                                          x=interactions_by_time_of_day_counts.index,
                                                          y=interactions_by_time_of_day_counts.values,
@@ -266,6 +281,7 @@ def register_callbacks(app, FBconn):
                     dcc.Graph(figure=time_spent_fig)
                 ])
         return html.Div("No data selected or no data available for the selected documents.")
+
 
     @app.callback(
         Output('quality-data-output', 'children'),
@@ -284,12 +300,12 @@ def register_callbacks(app, FBconn):
 
             # SVG for the first place
             first_place_svg = '''
-        <svg class="podium__number" viewBox="0 0 27.476 75.03" xmlns="http://www.w3.org/2000/svg">
-            <g transform="matrix(1, 0, 0, 1, 214.957736, -43.117417)">
-                <path class="st8" d="M -198.928 43.419 C -200.528 47.919 -203.528 51.819 -207.828 55.219 C -210.528 57.319 -213.028 58.819 -215.428 60.019 L -215.428 72.819 C -210.328 70.619 -205.628 67.819 -201.628 64.119 L -201.628 117.219 L -187.528 117.219 L -187.528 43.419 L -198.928 43.419 L -198.928 43.419 Z" style="fill: #000;"/>
-            </g>
-        </svg>
-        '''
+            <svg class="podium__number" viewBox="0 0 27.476 75.03" xmlns="http://www.w3.org/2000/svg">
+                <g transform="matrix(1, 0, 0, 1, 214.957736, -43.117417)">
+                    <path class="st8" d="M -198.928 43.419 C -200.528 47.919 -203.528 51.819 -207.828 55.219 C -210.528 57.319 -213.028 58.819 -215.428 60.019 L -215.428 72.819 C -210.328 70.619 -205.628 67.819 -201.628 64.119 L -201.628 117.219 L -187.528 117.219 L -187.528 43.419 L -198.928 43.419 L -198.928 43.419 Z" style="fill: #000;"/>
+                </g>
+            </svg>
+            '''
 
             # Create a podium display
             podium = html.Div(className="container podium", children=[
@@ -316,3 +332,4 @@ def register_callbacks(app, FBconn):
             ])
 
     return html.Div()
+

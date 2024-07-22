@@ -1,6 +1,5 @@
 import pandas as pd
 import sys
-
 import plotly.express as px
 from dash import Dash, dcc, html, Input, Output, State
 import dash_bootstrap_components as dbc
@@ -19,26 +18,18 @@ import requests
 from bs4 import BeautifulSoup
 import re
 
-
-
-
-
 def total_interactions(data):
     return len(data)
-
 
 def count_interactions_by_type(data):
     return data['Description'].value_counts()
 
-
-def interactions_over_time(data, interval='H'):
+def interactions_over_time(data, interval='h'):  # Updated 'H' to 'h'
     data['Time'] = pd.to_datetime(data['Time'])
     return data.set_index('Time').resample(interval)['Description'].count()
 
-
 def interactions_by_user(data):
     return data['User'].value_counts()
-
 
 def session_durations(data):
     data['Time'] = pd.to_datetime(data['Time'])
@@ -50,7 +41,6 @@ def session_durations(data):
         (sessions['Description'].str.contains('Open document')) & (sessions['User'] == sessions['Next_User'])]
     sessions['Session_Duration'] = sessions['Next_Time'] - sessions['Time']
     return sessions[['User', 'Time', 'Next_Time', 'Session_Duration']]
-
 
 def interactions_by_time_of_day(data):
     data['Time'] = pd.to_datetime(data['Time'])
