@@ -7,7 +7,7 @@ def about_page():
     contributors = [
         {"name": "Avishay Bar", "image": "/assets/Avishay.jpg"},
         {"name": "Ron Bendel", "image": "/assets/Ron.jpg"},
-        {"name": "Tamir Amer", "image": "/assets/Tamir.jpg"},
+        {"name": "Tamer Amer", "image": "/assets/Tamer.jpg"},
         {"name": "Bahaldeen Swied", "image": "/assets/Bhaa.jpg"},
         {"name": "Rabea Lahham", "image": "/assets/Rabea.jpg"}
     ]
@@ -24,8 +24,8 @@ def about_page():
 
     contact_section = html.Div([
         html.H2("Contact Us"),
-        html.P("Mail: CloudCourse123@gmail.com"),
-        html.P("Phone: *123 לך תזדיין יא מנייק")
+        html.P("E-Mail: CloudCourse123@gmail.com"),
+        html.P("Phone:+972535302166")
     ], className="contact-section")
 
     return html.Div([
