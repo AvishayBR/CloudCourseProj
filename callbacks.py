@@ -5,6 +5,7 @@ import json
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
+import dash
 from dash import dcc, html, Input, Output, State
 import dash_bootstrap_components as dbc
 from firebase_utils import upload_to_firebase, get_files_from_firebase, download_from_firebase
@@ -49,6 +50,70 @@ def register_callbacks(app, FBconn):
                     )
                 ])
         return '', ''
+
+    @app.callback(
+        Output('document-dropdown-analysis', 'value'),
+        [Input('select-all-button', 'n_clicks'),
+         Input('clear-all-button', 'n_clicks')],
+        [State('document-dropdown-analysis', 'options')]
+    )
+    def update_dropdown(select_all_clicks, clear_all_clicks, options):
+        ctx = dash.callback_context
+
+        if not ctx.triggered:
+            return []
+
+        button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+
+        if button_id == 'select-all-button':
+            return [option['value'] for option in options]
+        elif button_id == 'clear-all-button':
+            return []
+
+        return []
+
+    @app.callback(
+        Output('user-dropdown', 'value'),
+        [Input('user-select-all-button', 'n_clicks'),
+         Input('user-clear-all-button', 'n_clicks')],
+        [State('user-dropdown', 'options')]
+    )
+    def update_dropdown2(select_all_clicks, clear_all_clicks, options):
+        ctx = dash.callback_context
+
+        if not ctx.triggered:
+            return []
+
+        button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+
+        if button_id == 'user-select-all-button':
+            return [option['value'] for option in options]
+        elif button_id == 'user-clear-all-button':
+            return []
+
+        return []
+
+    @app.callback(
+        Output('document-dropdown', 'value'),
+        [Input('select-all-button', 'n_clicks'),
+         Input('clear-all-button', 'n_clicks')],
+        [State('document-dropdown', 'options')]
+    )
+    def update_dropdown(select_all_clicks, clear_all_clicks, options):
+        ctx = dash.callback_context
+
+        if not ctx.triggered:
+            return []
+
+        button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+
+        if button_id == 'select-all-button':
+            return [option['value'] for option in options]
+        elif button_id == 'clear-all-button':
+            return []
+
+        return []
+
 
     @app.callback(
         [Output('output-data-upload', 'children'),
@@ -174,9 +239,10 @@ def register_callbacks(app, FBconn):
     @app.callback(
         Output('sidebar-nav', 'children'),
         [Input('upload-state', 'children'),
-         Input('output-analysis', 'children')]
+         Input('output-analysis', 'children'),
+         Input('url', 'pathname')]
     )
-    def update_sidebar(upload_state, output_analysis):
+    def update_sidebar(upload_state, output_analysis, pathname):
         nav_links = [
             dbc.NavLink("Home", href="/", active="exact", className="nav-link"),
             dbc.NavLink("Setup", href="/setup", active="exact", className="nav-link"),
@@ -186,20 +252,18 @@ def register_callbacks(app, FBconn):
             nav_links.extend([
                 dbc.NavLink("Analysis & Statistics", href="/analysis", active="exact", className="nav-link"),
                 dbc.NavLink("Students Quality Board", href="/quality", active="exact", className="nav-link"),
-                dbc.NavLink("Glossary Index", href="/index", active="exact", className="nav-link"),
-                dbc.NavLink("About", href="/about", active="exact", className="nav-link")
             ])
-        else:
-            nav_links.extend([
-                dbc.NavLink("Glossary Index", href="/index", active="exact", className="nav-link"),
-                dbc.NavLink("About", href="/about", active="exact", className="nav-link")
-            ])
+        nav_links.extend([
+            dbc.NavLink("Glossary Index", href="/index", active="exact" if pathname == "/index" else False, className="nav-link"),
+            dbc.NavLink("About", href="/about", active="exact" if pathname == "/about" else False, className="nav-link")
+        ])
+
         return nav_links
 
     @app.callback(
         Output('filtered-data-output', 'children'),
         [Input('generate-button', 'n_clicks')],
-        [State('document-dropdown', 'value'),
+        [State('document-dropdown-analysis', 'value'),
          State('user-dropdown', 'value'),
          State('date-picker-range', 'start_date'),
          State('date-picker-range', 'end_date')]
@@ -332,4 +396,5 @@ def register_callbacks(app, FBconn):
             ])
 
     return html.Div()
+
 

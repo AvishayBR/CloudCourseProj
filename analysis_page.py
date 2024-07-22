@@ -11,17 +11,27 @@ def analysis_page(current_data):
     return html.Div([
         html.H1("Analysis & Statistics"),
         html.P("Select documents to filter the data:"),
-        dcc.Dropdown(
-            id='document-dropdown',
-            options=[{'label': doc, 'value': doc} for doc in current_data['Document'].unique() if doc],
-            multi=True
-        ),
+        html.Div([
+            html.Button("Select All", id='select-all-button', n_clicks=0, className="button-select-all"),
+            html.Button("Clear All", id='clear-all-button', n_clicks=0, className="button-clear-all"),
+            dcc.Dropdown(
+                id='document-dropdown-analysis',
+                options=[{'label': doc, 'value': doc} for doc in current_data['Document'].unique() if doc],
+                className="dropdown",
+                multi=True
+            ),
+        ], className="button-dropdown-container"),
         html.P("Select users to filter the data:"),
-        dcc.Dropdown(
-            id='user-dropdown',
-            options=[{'label': user, 'value': user} for user in current_data['User'].unique() if user],
-            multi=True
-        ),
+        html.Div([
+            html.Button("Select All", id='user-select-all-button', n_clicks=0, className="button-select-all"),
+            html.Button("Clear All", id='user-clear-all-button', n_clicks=0, className="button-clear-all"),
+            dcc.Dropdown(
+                id='user-dropdown',
+                options=[{'label': user, 'value': user} for user in current_data['User'].unique() if user],
+                className="dropdown",
+                multi=True
+            ),
+        ], className="button-dropdown-container"),
         html.P("Select date range to filter the data:"),
         dcc.DatePickerRange(
             id='date-picker-range',

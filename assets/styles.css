@@ -246,21 +246,57 @@ body {
 
 .podium .first {
     min-height: 300px;
-    background: linear-gradient(333deg, rgba(255,172,37,1) 0%, rgba(254,207,51,1) 13%, rgba(254,224,51,1) 53%, rgba(255,172,37,1) 100%);
+    background: linear-gradient(333deg, rgba(255,215,0,1) 0%, rgba(255,223,77,1) 13%, rgba(255,239,0,1) 53%, rgba(255,215,0,1) 100%);
 }
 
 .podium .second {
     min-height: 200px;
-    background: linear-gradient(333deg, rgba(37, 99, 255, 1) 0%, rgba(51, 130, 254, 1) 13%, rgba(51, 157, 254, 1) 53%, rgba(37, 99, 255, 1) 100%);
+    background: linear-gradient(333deg, rgba(192,192,192,1) 0%, rgba(211,211,211,1) 13%, rgba(220,220,220,1) 53%, rgba(192,192,192,1) 100%);
 }
 
 .podium .third {
     min-height: 100px;
-    background: linear-gradient(333deg, rgba(37, 255, 37, 1) 0%, rgba(51, 254, 51, 1) 13%, rgba(51, 254, 97, 1) 53%, rgba(37, 255, 37, 1) 100%);
+    background: linear-gradient(333deg, rgba(205,127,50,1) 0%, rgba(210,140,69,1) 13%, rgba(215,157,84,1) 53%, rgba(205,127,50,1) 100%);
 }
 .podium-heading {
     margin-bottom: 20px;
     font-size: 1.5rem;
     color: #333;
     font-weight: bold;
+}
+.button-dropdown-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.button-select-all, .button-clear-all {
+    display: inline-block;
+    padding: 10px 20px;
+    font-size: 1rem;
+    color: #fff;
+    background-color: #4CAF50;
+    border: none;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s, box-shadow 0.3s, transform 0.3s;
+    cursor: pointer;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.button-select-all:hover, .button-clear-all:hover {
+    background-color: #45a049;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+    transform: translateY(-3px);
+}
+
+.button-select-all:active, .button-clear-all:active {
+    transform: translateY(-1px);
+}
+
+.dropdown {
+    width: 1000px;
 }
