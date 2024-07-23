@@ -283,25 +283,24 @@ def register_callbacks(app, FBconn):
                 current_data = current_data[(current_data['Time'] >= start_date) & (current_data['Time'] <= end_date)]
 
             if not current_data.empty:
-                # Ensure 'Time' is in datetime format
-                current_data['Time'] = pd.to_datetime(current_data['Time'])
-
-                # Calculate the time difference between consecutive entries for each user
-                current_data = current_data.sort_values(by=['User', 'Time'])
-                current_data['Time_Diff'] = current_data.groupby('User')['Time'].diff().fillna(
-                    pd.Timedelta(seconds=0))
-
-                # Convert 'Time_Diff' to total seconds
-                current_data['Time_Spent'] = current_data['Time_Diff'].dt.total_seconds()
+                # Group data by 'User' and 'Document', then calculate session durations
+                session_data = pd.DataFrame()
+                for (user, document), group in current_data.groupby(['User', 'Document']):
+                    user_document_sessions = graph_utils.session_durations(group)
+                    user_document_sessions['Document'] = document
+                    session_data = pd.concat([session_data, user_document_sessions])
 
                 # Summarize the time spent by each user for each document
-                user_document_time_spent = current_data.groupby(['User', 'Document'])['Time_Spent'].sum().reset_index()
-                user_document_time_spent['Time_Spent_hours'] = user_document_time_spent['Time_Spent'] / 3600
+                user_document_time_spent = session_data.groupby(['User', 'Document'])[
+                    'Session_Duration'].sum().reset_index()
+                user_document_time_spent['Session_Duration_hours'] = user_document_time_spent[
+                                                                         'Session_Duration'].dt.total_seconds() / 3600
 
-                # Create the bar chart for time spent by each user on each document
-                time_spent_fig = px.bar(user_document_time_spent, x='User', y='Time_Spent_hours', color='Document',
-                                        labels={'Time_Spent_hours': 'Time Spent (hours)'},
-                                        title='Time Spent by Each User on Each Document',
+                # Create the bar chart for session time spent by each user on each document
+                time_spent_fig = px.bar(user_document_time_spent, x='User', y='Session_Duration_hours',
+                                        color='Document',
+                                        labels={'Session_Duration_hours': 'Session Duration (hours)'},
+                                        title='Session Duration by Each User on Each Document',
                                         barmode='group')
 
                 # Generate other required plots
