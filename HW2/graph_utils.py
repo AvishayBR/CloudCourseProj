@@ -17,7 +17,7 @@ from nltk.stem import PorterStemmer
 import requests
 from bs4 import BeautifulSoup
 import re
-
+pd.options.mode.chained_assignment = None
 def total_interactions(data):
     return len(data)
 
@@ -25,7 +25,7 @@ def count_interactions_by_type(data):
     return data['Description'].value_counts()
 
 def interactions_over_time(data, interval='h'):  # Updated 'H' to 'h'
-    data['Time'] = pd.to_datetime(data['Time'])
+    data.loc[:,'Time'] = pd.to_datetime(data['Time'])
     return data.set_index('Time').resample(interval)['Description'].count()
 
 def interactions_by_user(data):
@@ -34,7 +34,7 @@ def interactions_by_user(data):
 def session_durations(data):
     data['Time'] = pd.to_datetime(data['Time'])
     data = data.sort_values(by=['User', 'Time'])
-    sessions = data[data['Description'].str.contains('Open document|Close document')]
+    sessions = data[data['Description'].str.contains('Open document|Close document')].copy()
     sessions['Next_Time'] = sessions['Time'].shift(-1)
     sessions['Next_User'] = sessions['User'].shift(-1)
     sessions = sessions[
@@ -43,8 +43,8 @@ def session_durations(data):
     return sessions[['User', 'Time', 'Next_Time', 'Session_Duration']]
 
 def interactions_by_time_of_day(data):
-    data['Time'] = pd.to_datetime(data['Time'])
-    data['Hour'] = data['Time'].dt.hour
+    data.loc[:,'Time'] = pd.to_datetime(data.loc[:,'Time'])
+    data.loc[:,'Hour'] = data.loc[:,'Time'].dt.hour
     return data.groupby('Hour')['Description'].count()
 
 def top_performers(data):

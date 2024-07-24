@@ -286,8 +286,8 @@ def register_callbacks(app, FBconn):
                 # Group data by 'User' and 'Document', then calculate session durations
                 session_data = pd.DataFrame()
                 for (user, document), group in current_data.groupby(['User', 'Document']):
-                    user_document_sessions = graph_utils.session_durations(group)
-                    user_document_sessions['Document'] = document
+                    user_document_sessions = graph_utils.session_durations(group).copy()
+                    user_document_sessions.loc[:, 'Document'] = document
                     session_data = pd.concat([session_data, user_document_sessions])
 
                 # Summarize the time spent by each user for each document
