@@ -4,6 +4,7 @@ import os
 
 # Change directory to the cloned repository
 os.chdir('CloudCourseProj')
+os.chdir('HW2')
 
 # Install the required packages
 os.system('pip install -r requirements.txt')
