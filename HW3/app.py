@@ -12,15 +12,16 @@ from analysis_page import analysis_page
 from glossary_index_page import page_index
 from about_page import about_page
 from quality_page import quality_page
-from firebase_utils import upload_to_firebase, get_files_from_firebase, download_from_firebase
+from firebase_utils import upload_to_firebase, get_files_from_firebase, download_from_firebase, fetch_patterns_from_firebase
 from callbacks import register_callbacks
+from chat_page import chat_page
 import data_cache
+
 # Initialize the Dash app
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 app.title = "Cloud Course Project"
 current_data = data_cache.get_current_data()
-
 
 
 # Define the sidebar
@@ -43,6 +44,7 @@ sidebar = html.Div(
                 dbc.NavLink("Home", href="/", active="exact", className="nav-link"),
                 dbc.NavLink("Setup", href="/setup", active="exact", className="nav-link"),
                 dbc.NavLink("Glossary Index", href="/index", active="exact", className="nav-link"),
+                dbc.NavLink("Chatbot", href="/chat", active="exact", className="nav-link"),
                 dbc.NavLink("About", href="/about", active="exact", className="nav-link"),
             ],
             vertical=True,
@@ -80,6 +82,8 @@ def render_page_content(pathname):
         return page_index()
     elif pathname == "/quality":
         return quality_page(data_cache.get_current_data())
+    elif pathname == "/chat":
+        return chat_page()
     else:
         return html.Div([
             html.H1("404: Not found"),
@@ -88,7 +92,7 @@ def render_page_content(pathname):
 
 
 # Get your ngrok authtoken from https://dashboard.ngrok.com/get-started/your-authtoken
-NGROK_AUTH_TOKEN = '2juocqeCB2E8T1dk7V3exv7nyWJ_358K3PFxX8JAF5mhTCV2z'
+NGROK_AUTH_TOKEN = '2jbSpaKyglr7M32PSxaTzJNs8Xo_26GYVC3itVo1nXrQFDrjm'
 ngrok.set_auth_token(NGROK_AUTH_TOKEN)
 
 # Run the app with ngrok
