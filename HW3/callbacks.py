@@ -8,12 +8,66 @@ import plotly.express as px
 import dash
 from dash import dcc, html, Input, Output, State
 import dash_bootstrap_components as dbc
-from firebase_utils import upload_to_firebase, get_files_from_firebase, download_from_firebase
+from firebase_utils import upload_to_firebase, get_files_from_firebase, download_from_firebase, fetch_patterns_from_firebase
 from indexing_utils import search_engine
 import data_cache
 import graph_utils
+import nltk
+from nltk.chat.util import Chat, reflections
+
+# Initialize NLTK components
+nltk.download('punkt')
+nltk.download('wordnet')
 
 def register_callbacks(app, FBconn):
+
+    # Get patterns from Database
+    patterns = fetch_patterns_from_firebase('patterns.txt')
+
+    # Create the Chatbot
+    chatbot = Chat(patterns, reflections)
+
+    @app.callback(
+    [Output('conversation-container', 'children'), Output('conversation-state', 'children'), Output('user-input', 'value')],
+    [Input('submit-button', 'n_clicks')],
+    [State('user-input', 'value'), State('conversation-state', 'children')]
+    )
+    def update_conversation(n_clicks, user_message, conversation_state):
+        if conversation_state is None:
+            # Initial greeting from the chatbot
+            conversation_state = [html.Div("Chatbot: Hello! How can I assist you today?", style={"color": "blue"})]
+            return conversation_state, conversation_state, ''
+
+        if n_clicks > 0 and user_message:
+            # Simulate chatbot response (replace with actual chatbot logic)
+            chatbot_response = chatbot.respond(user_message)
+
+            if(chatbot_response == None):
+              chatbot_response = 'I am not quite sure i understand that, feel free to ask me anything else :)'
+
+            # Check if the user want to clear the chat
+            if(user_message == 'clear'):
+              conversation_state = []
+              conversation_state.append(html.Div("Chat cleared...", style={"color": "blue"}))
+              conversation_state.append(html.Div("Chatbot: Hello! How can I assist you today?", style={"color": "blue"}))
+            else:
+              # Update conversation state
+              conversation_state.append(html.Div(f"You: {user_message}"))
+              conversation_state.append(html.Div(f"Chatbot: {chatbot_response}", style={"color": "blue"}))
+
+            return conversation_state, conversation_state, ''  # Clear the input field
+
+        return dash.no_update, dash.no_update, dash.no_update
+
+    @app.callback(
+        Output('submit-button', 'disabled'),
+        Input('user-input', 'value')
+    )
+    def toggle_button_state(user_message):
+        # Disable the button if the input field is empty
+        if user_message:
+            return False
+        return True
 
     @app.callback(
         [Output('output-container', 'children'),
@@ -90,7 +144,7 @@ def register_callbacks(app, FBconn):
             return [option['value'] for option in options]
         elif button_id == 'user-clear-all-button':
             return []
-
+  
         return []
 
     @app.callback(
@@ -176,6 +230,7 @@ def register_callbacks(app, FBconn):
     def update_dropdown(n_clicks):
         if n_clicks > 0:
             files = get_files_from_firebase()
+            files = [file for file in files if file != 'patterns.txt']
             options = [{'label': file, 'value': file} for file in files]
             return options, {"margin": "auto", "margin-top": "20px", "display": "block"}
         return [], {"display": "none"}
@@ -231,7 +286,6 @@ def register_callbacks(app, FBconn):
                            fill_color='lavender',
                            align='left'))
             ])
-
             return dcc.Graph(figure=table), 'uploaded'
         return html.Div(), ''
 
@@ -255,6 +309,7 @@ def register_callbacks(app, FBconn):
             ])
         nav_links.extend([
             dbc.NavLink("Glossary Index", href="/index", active="exact" if pathname == "/index" else False, className="nav-link"),
+            dbc.NavLink("Chatbot", href="/chat", active="exact" if pathname == "/chat" else False, className="nav-link"),
             dbc.NavLink("About", href="/about", active="exact" if pathname == "/about" else False, className="nav-link")
         ])
 
