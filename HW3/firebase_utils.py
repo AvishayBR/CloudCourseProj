@@ -1,4 +1,5 @@
 from firebase_admin import storage
+import ast
 
 # Function to upload file to Firebase Storage
 def upload_to_firebase(filename, content):
@@ -20,3 +21,16 @@ def download_from_firebase(filename):
     blob = bucket.blob(filename)
     content = blob.download_as_text()
     return content
+
+# Function to download patterns from Firebase Storage
+def fetch_patterns_from_firebase(filename):
+    bucket = storage.bucket()
+    blob = bucket.blob(filename)
+
+    # Download the file content
+    patterns_content = blob.download_as_text()
+    
+    # Parse the content into Python list
+    patterns = ast.literal_eval(patterns_content)
+    
+    return patterns
