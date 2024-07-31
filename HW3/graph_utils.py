@@ -58,3 +58,23 @@ def top_performers(data):
         ratio = 100 - (delete_count / total_rows) * 100
         students_iterations[student] = ratio
     return students_iterations
+def get_users_adding_interations(data):
+    data = data.drop(columns=['Time', 'Document','Tab'])
+    unique_students = data['User'].unique().tolist()
+    students_iterations = dict()
+    for student in unique_students:
+        student_data = data[data['User'] == student]
+        add_count = 0
+        add_count = add_count + student_data['Description'].str.contains('Create document').sum() * 4
+        add_count = add_count + student_data['Description'].str.contains('Add').sum() * 2
+        add_count = add_count + student_data['Description'].str.contains('Insert').sum() * 2
+        add_count = add_count + student_data['Description'].str.contains('Update').sum() * 1
+        add_count = add_count + student_data['Description'].str.contains('Edit').sum() * 1
+        add_count = add_count + student_data['Description'].str.contains('Delete').sum() * -2
+        add_count = add_count + student_data['Description'].str.contains('Trash').sum() * -4
+        students_iterations[student] = add_count
+    average = 0
+    for student in students_iterations.keys():
+        average = average + students_iterations[student]
+    average = average / len(students_iterations)
+    return students_iterations, average

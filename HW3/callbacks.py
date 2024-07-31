@@ -8,7 +8,8 @@ import plotly.express as px
 import dash
 from dash import dcc, html, Input, Output, State
 import dash_bootstrap_components as dbc
-from firebase_utils import upload_to_firebase, get_files_from_firebase, download_from_firebase, fetch_patterns_from_firebase
+from firebase_utils import upload_to_firebase, get_files_from_firebase, download_from_firebase, \
+    fetch_patterns_from_firebase
 from indexing_utils import search_engine
 import data_cache
 import graph_utils
@@ -19,8 +20,8 @@ from nltk.chat.util import Chat, reflections
 nltk.download('punkt')
 nltk.download('wordnet')
 
-def register_callbacks(app, FBconn):
 
+def register_callbacks(app, FBconn):
     # Get patterns from Database
     patterns = fetch_patterns_from_firebase('patterns.txt')
 
@@ -28,9 +29,10 @@ def register_callbacks(app, FBconn):
     chatbot = Chat(patterns, reflections)
 
     @app.callback(
-    [Output('conversation-container', 'children'), Output('conversation-state', 'children'), Output('user-input', 'value')],
-    [Input('submit-button', 'n_clicks')],
-    [State('user-input', 'value'), State('conversation-state', 'children')]
+        [Output('conversation-container', 'children'), Output('conversation-state', 'children'),
+         Output('user-input', 'value')],
+        [Input('submit-button', 'n_clicks')],
+        [State('user-input', 'value'), State('conversation-state', 'children')]
     )
     def update_conversation(n_clicks, user_message, conversation_state):
         if conversation_state is None:
@@ -42,18 +44,19 @@ def register_callbacks(app, FBconn):
             # Simulate chatbot response (replace with actual chatbot logic)
             chatbot_response = chatbot.respond(user_message)
 
-            if(chatbot_response == None):
-              chatbot_response = 'I am not quite sure i understand that, feel free to ask me anything else :)'
+            if (chatbot_response == None):
+                chatbot_response = 'I am not quite sure i understand that, feel free to ask me anything else :)'
 
             # Check if the user want to clear the chat
-            if(user_message == 'clear'):
-              conversation_state = []
-              conversation_state.append(html.Div("Chat cleared...", style={"color": "blue"}))
-              conversation_state.append(html.Div("Chatbot: Hello! How can I assist you today?", style={"color": "blue"}))
+            if (user_message == 'clear'):
+                conversation_state = []
+                conversation_state.append(html.Div("Chat cleared...", style={"color": "blue"}))
+                conversation_state.append(
+                    html.Div("Chatbot: Hello! How can I assist you today?", style={"color": "blue"}))
             else:
-              # Update conversation state
-              conversation_state.append(html.Div(f"You: {user_message}"))
-              conversation_state.append(html.Div(f"Chatbot: {chatbot_response}", style={"color": "blue"}))
+                # Update conversation state
+                conversation_state.append(html.Div(f"You: {user_message}"))
+                conversation_state.append(html.Div(f"Chatbot: {chatbot_response}", style={"color": "blue"}))
 
             return conversation_state, conversation_state, ''  # Clear the input field
 
@@ -144,7 +147,7 @@ def register_callbacks(app, FBconn):
             return [option['value'] for option in options]
         elif button_id == 'user-clear-all-button':
             return []
-  
+
         return []
 
     @app.callback(
@@ -167,7 +170,6 @@ def register_callbacks(app, FBconn):
             return []
 
         return []
-
 
     @app.callback(
         [Output('output-data-upload', 'children'),
@@ -308,8 +310,10 @@ def register_callbacks(app, FBconn):
                 dbc.NavLink("Students Quality Board", href="/quality", active="exact", className="nav-link"),
             ])
         nav_links.extend([
-            dbc.NavLink("Glossary Index", href="/index", active="exact" if pathname == "/index" else False, className="nav-link"),
-            dbc.NavLink("Chatbot", href="/chat", active="exact" if pathname == "/chat" else False, className="nav-link"),
+            dbc.NavLink("Glossary Index", href="/index", active="exact" if pathname == "/index" else False,
+                        className="nav-link"),
+            dbc.NavLink("Chatbot", href="/chat", active="exact" if pathname == "/chat" else False,
+                        className="nav-link"),
             dbc.NavLink("About", href="/about", active="exact" if pathname == "/about" else False, className="nav-link")
         ])
 
@@ -400,7 +404,6 @@ def register_callbacks(app, FBconn):
                 ])
         return html.Div("No data selected or no data available for the selected documents.")
 
-
     @app.callback(
         Output('quality-data-output', 'children'),
         [Input('generate-quality-button', 'n_clicks')],
@@ -410,7 +413,7 @@ def register_callbacks(app, FBconn):
         if n_clicks > 0 and selected_documents:
             current_data = data_cache.get_current_data()
             filtered_data = current_data[current_data['Document'].isin(selected_documents)]
-            deleting_percentage = graph_utils.top_performers(filtered_data)
+            deleting_percentage, average = graph_utils.get_users_adding_interations(filtered_data)
             df = pd.DataFrame(list(deleting_percentage.items()), columns=['Student', 'Quality Percentage'])
 
             # Sort the DataFrame by 'Value' in descending order and get the top 3
@@ -440,8 +443,23 @@ def register_callbacks(app, FBconn):
                     html.Div(className="podium__rank third", children="3")
                 ])
             ])
-
-            fig = px.bar(df, x='Student', y='Quality Percentage', title='Students Quality Bar')
+            df['Color'] = df['Quality Percentage'].apply(
+                lambda x: 'Below Threshold' if x < average else (
+                    'Above Threshold' if x not in top_3["Quality Percentage"].values else (
+                        '1st Place Performer' if x == top_3.iloc[0]['Quality Percentage'] else (
+                            '2nd Place Performer' if x == top_3.iloc[1]['Quality Percentage'] else
+                            '3rd Place Performer'
+                        )
+                    )))
+            df_sorted = df.sort_values(by='Quality Percentage', ascending=False)
+            fig = px.bar(df_sorted, x='Student', y='Quality Percentage', color='Color', title='Students Quality Bar',
+                         color_discrete_map={
+                             'Below Threshold': 'red',
+                             'Above Threshold': 'blue',
+                             '1st Place Performer': 'gold',
+                             '2nd Place Performer': 'silver',
+                             '3rd Place Performer': 'chocolate'
+                         },labels={'Quality Percentage': 'Student Rate'})
 
             return html.Div([
                 html.H3("Top Performers Podium", className="podium-heading"),
@@ -450,5 +468,3 @@ def register_callbacks(app, FBconn):
             ])
 
     return html.Div()
-
-

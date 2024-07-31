@@ -92,7 +92,7 @@ def render_page_content(pathname):
 
 
 # Get your ngrok authtoken from https://dashboard.ngrok.com/get-started/your-authtoken
-NGROK_AUTH_TOKEN = '2jbSpaKyglr7M32PSxaTzJNs8Xo_26GYVC3itVo1nXrQFDrjm'
+NGROK_AUTH_TOKEN = '2k1MApZhImVlp8Kw7t1H5tPIMEZ_4BDDA7xgYLWC3mwyLur6z'
 ngrok.set_auth_token(NGROK_AUTH_TOKEN)
 
 # Run the app with ngrok

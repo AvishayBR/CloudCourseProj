@@ -1,5 +1,7 @@
 ﻿dash
 dash_bootstrap_components
+pandas
 pyngrok
 firebase
+firebase-admin
 nltk
