@@ -9,6 +9,10 @@ def home_page():
         html.P(
             "By processing log files in JSON format from the OnShape application, this tool provides detailed statistics and insights into team performance, project progress, and collaboration efficiency."),
         html.P("Navigate to the Dashboard to see detailed visualizations and analysis."),
+        html.P("To begin the analysis, you can upload a new log file or select an existing one from the database."),
+        html.P("Start by navigating to the Setup section, where you can choose a log file from your device and save it to the database. "),
+        html.P("If you prefer to analyze a previously uploaded log file, simply go to the Setup section, click the Search button, and select the file from the database."),
+        html.P("Once the log file is ready, proceed to the Analyze section to gain insights and generate statistics from the data."),
         html.Div(
             [
                 html.Img(

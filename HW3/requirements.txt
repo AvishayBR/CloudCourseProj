@@ -5,3 +5,4 @@ pyngrok
 firebase
 firebase-admin
 nltk
+python-dotenv
