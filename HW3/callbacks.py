@@ -20,7 +20,7 @@ from nltk.chat.util import Chat, reflections
 nltk.download('punkt')
 nltk.download('wordnet')
 
-
+# Function to register all Dash callbacks
 def register_callbacks(app, FBconn):
     # Get patterns from Database
     patterns = fetch_patterns_from_firebase('patterns.txt')
@@ -28,6 +28,7 @@ def register_callbacks(app, FBconn):
     # Create the Chatbot
     chatbot = Chat(patterns, reflections)
 
+    # Callback to update the conversation based on user input
     @app.callback(
         [Output('conversation-container', 'children'), Output('conversation-state', 'children'),
          Output('user-input', 'value')],
@@ -62,6 +63,7 @@ def register_callbacks(app, FBconn):
 
         return dash.no_update, dash.no_update, dash.no_update
 
+    # Callback to toggle the state of the submit button based on the user input
     @app.callback(
         Output('submit-button', 'disabled'),
         Input('user-input', 'value')
@@ -72,6 +74,7 @@ def register_callbacks(app, FBconn):
             return False
         return True
 
+    # Callback to update the glossary index based on user input
     @app.callback(
         [Output('output-container', 'children'),
          Output('index-state-table', 'children')],
@@ -79,15 +82,17 @@ def register_callbacks(app, FBconn):
         State('text-input', 'value')
     )
     def update_glossary_index(n_clicks, value):
+        # Define the URL of the glossary
         glossary_url = 'https://cad.onshape.com/help/Content/Glossary/glossary.htm'
         if n_clicks > 0:
-            if not value:
+            if not value: # Check if the input is empty
                 return 'Cannot index an empty input', ''
-            else:
+            else: # Search the glossary index for the input
                 result = search_engine(glossary_url, value)
                 if not result:
                     return f'Cannot find any index related to {value}', ''
 
+                # Create a table to display the search results
                 keys = list(result.keys())
                 values = list(result.values())
 
@@ -108,6 +113,7 @@ def register_callbacks(app, FBconn):
                 ])
         return '', ''
 
+    # Callback to update the sidebar dynamically based on the file upload state
     @app.callback(
         Output('document-dropdown-analysis', 'value'),
         [Input('select-all-button', 'n_clicks'),
@@ -120,6 +126,7 @@ def register_callbacks(app, FBconn):
         if not ctx.triggered:
             return []
 
+        # Get the ID of the button that triggered the callback
         button_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
         if button_id == 'select-all-button':
@@ -129,6 +136,7 @@ def register_callbacks(app, FBconn):
 
         return []
 
+    # Callback to update the dropdown based on the search button click
     @app.callback(
         Output('user-dropdown', 'value'),
         [Input('user-select-all-button', 'n_clicks'),
@@ -140,7 +148,7 @@ def register_callbacks(app, FBconn):
 
         if not ctx.triggered:
             return []
-
+        # Get the ID of the button that triggered the callback
         button_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
         if button_id == 'user-select-all-button':
@@ -150,6 +158,7 @@ def register_callbacks(app, FBconn):
 
         return []
 
+    # Callback to update the dropdown based on the search button click
     @app.callback(
         Output('document-dropdown', 'value'),
         [Input('select-all-button', 'n_clicks'),
@@ -161,7 +170,7 @@ def register_callbacks(app, FBconn):
 
         if not ctx.triggered:
             return []
-
+        # Get the ID of the button that triggered the callback
         button_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
         if button_id == 'select-all-button':
@@ -171,6 +180,7 @@ def register_callbacks(app, FBconn):
 
         return []
 
+    # Callback to update the dropdown based on the search button click
     @app.callback(
         [Output('output-data-upload', 'children'),
          Output('upload-state', 'children')],
@@ -179,15 +189,15 @@ def register_callbacks(app, FBconn):
          State('upload-data', 'last_modified')]
     )
     def update_output(content, filename, date):
-        if content is not None:
-            content_type, content_string = content.split(',')
-            decoded = base64.b64decode(content_string)
+        if content is not None: # Check if a file was uploaded
+            content_type, content_string = content.split(',') # Split the content
+            decoded = base64.b64decode(content_string) # Decode the content
             try:
                 if '.json' in filename:
                     # Assume that the user uploaded a JSON file
                     data = pd.read_json(io.StringIO(decoded.decode('utf-8')))
                     data['Time'] = pd.to_datetime(data['Time'])  # Convert 'Time' column to datetime
-                    data_cache.update_current_data(data)
+                    data_cache.update_current_data(data) # Update the current data
                     table = go.Figure(data=[go.Table(
                         header=dict(values=list(data.columns),
                                     fill_color='paleturquoise',
@@ -215,6 +225,7 @@ def register_callbacks(app, FBconn):
                 ]), ''
         return html.Div(), ''
 
+    # Callback to update the sidebar dynamically based on the file upload state
     @app.callback(
         Output('save-button', 'style'),
         [Input('upload-state', 'children')]
@@ -224,6 +235,7 @@ def register_callbacks(app, FBconn):
             return {"display": "block", "margin": "auto", "margin-top": "20px"}
         return {"display": "none"}
 
+    # Callback to update the dropdown based on the search button click
     @app.callback(
         Output('file-dropdown', 'options'),
         Output('file-dropdown', 'style'),
@@ -237,6 +249,7 @@ def register_callbacks(app, FBconn):
             return options, {"margin": "auto", "margin-top": "20px", "display": "block"}
         return [], {"display": "none"}
 
+    # Callback to update the dropdown based on the search button click
     @app.callback(
         Output('save-state', 'children'),
         [Input('save-button', 'n_clicks')],
@@ -269,6 +282,7 @@ def register_callbacks(app, FBconn):
                 return 'Error saving data'
         return ''
 
+    # Callback to update the dropdown based on the search button click
     @app.callback(
         [Output('output-search-state', 'children'),
          Output('output-analysis', 'children')],
@@ -299,17 +313,17 @@ def register_callbacks(app, FBconn):
          Input('url', 'pathname')]
     )
     def update_sidebar(upload_state, output_analysis, pathname):
-        nav_links = [
+        nav_links = [ # Define the default links
             dbc.NavLink("Home", href="/", active="exact", className="nav-link"),
             dbc.NavLink("Setup", href="/setup", active="exact", className="nav-link"),
 
         ]
-        if (upload_state == 'uploaded' or output_analysis == 'uploaded'):
-            nav_links.extend([
+        if (upload_state == 'uploaded' or output_analysis == 'uploaded'):   # Check if a file was uploaded
+            nav_links.extend([ # Add the following links to the sidebar
                 dbc.NavLink("Analysis & Statistics", href="/analysis", active="exact", className="nav-link"),
                 dbc.NavLink("Students Quality Board", href="/quality", active="exact", className="nav-link"),
             ])
-        nav_links.extend([
+        nav_links.extend([ # Add the following links to the sidebar
             dbc.NavLink("Glossary Index", href="/index", active="exact" if pathname == "/index" else False,
                         className="nav-link"),
             dbc.NavLink("Chatbot", href="/chat", active="exact" if pathname == "/chat" else False,
@@ -319,6 +333,7 @@ def register_callbacks(app, FBconn):
 
         return nav_links
 
+    # Callback to the graphs based on the user input
     @app.callback(
         Output('filtered-data-output', 'children'),
         [Input('generate-button', 'n_clicks')],
@@ -331,13 +346,13 @@ def register_callbacks(app, FBconn):
         if n_clicks > 0:
             current_data = data_cache.get_current_data()
 
-            if selected_documents:
+            if selected_documents: # Check if documents are selected
                 current_data = current_data[current_data['Document'].isin(selected_documents)]
 
-            if selected_users:
+            if selected_users: # Check if users are selected
                 current_data = current_data[current_data['User'].isin(selected_users)]
 
-            if start_date and end_date:
+            if start_date and end_date: # Check if a date range is selected
                 current_data['Time'] = pd.to_datetime(current_data['Time'])
                 current_data = current_data[(current_data['Time'] >= start_date) & (current_data['Time'] <= end_date)]
 
@@ -368,7 +383,7 @@ def register_callbacks(app, FBconn):
                     value=graph_utils.total_interactions(current_data),
                     title={"text": "Total Interactions"}
                 ))
-
+                # Generate the rest of the plots
                 interactions_by_type_counts = graph_utils.count_interactions_by_type(current_data)
                 interactions_by_type_fig = px.bar(interactions_by_type_counts, x=interactions_by_type_counts.index,
                                                   y=interactions_by_type_counts.values,
@@ -404,6 +419,7 @@ def register_callbacks(app, FBconn):
                 ])
         return html.Div("No data selected or no data available for the selected documents.")
 
+    # Callback to update the quality graph based on the user input
     @app.callback(
         Output('quality-data-output', 'children'),
         [Input('generate-quality-button', 'n_clicks')],

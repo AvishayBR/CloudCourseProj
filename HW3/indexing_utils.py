@@ -3,7 +3,7 @@ import re
 from bs4 import BeautifulSoup
 from nltk.stem import PorterStemmer
 
-
+# Updated 'fetch_page' function to handle the case when the response status code is not 200
 def fetch_page(url):
     response = requests.get(url)
     if response.status_code == 200:
@@ -12,7 +12,7 @@ def fetch_page(url):
     else:
         return None
 
-
+# Updated 'index_words' function to use a dictionary to store the word count
 def index_words(soup):
     index = {}
     words = re.findall(r'\w+', soup.get_text())
@@ -24,7 +24,7 @@ def index_words(soup):
             index[word] = 1
     return index
 
-
+# Updated 'remove_stop_words' function to use a set for stop words
 def remove_stop_words(index):
     stop_words = {'a', 'an', 'the', 'and', 'or', 'in', 'on', 'at', 'to'}
     for stop_word in stop_words:
@@ -32,7 +32,7 @@ def remove_stop_words(index):
             del index[stop_word]
     return index
 
-
+# Updated 'apply_stemming' function to use the PorterStemmer from nltk
 def apply_stemming(index):
     stemmer = PorterStemmer()
     stemmed_index = {}
@@ -44,7 +44,7 @@ def apply_stemming(index):
             stemmed_index[stemmed_word] = count
     return stemmed_index
 
-
+# Updated 'search' function to use the PorterStemmer from nltk
 def search(query, index):
     stemmer = PorterStemmer()
     query_words = re.findall(r'\w+', query.lower())
@@ -57,7 +57,7 @@ def search(query, index):
             results[word] = 0
     return results
 
-
+# Updated 'search_engine' function to use the updated functions
 def search_engine(url, query):
     soup = fetch_page(url)
     if soup is None:

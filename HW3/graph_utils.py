@@ -17,20 +17,28 @@ from nltk.stem import PorterStemmer
 import requests
 from bs4 import BeautifulSoup
 import re
+
+# Suppress the SettingWithCopyWarning that pandas may raise
 pd.options.mode.chained_assignment = None
+
+# Function to calculate the total number of interactions in the dataset
 def total_interactions(data):
     return len(data)
 
+# Function to count the number of interactions by type (based on the 'Description' column)
 def count_interactions_by_type(data):
     return data['Description'].value_counts()
 
+# Function to count interactions over time, allowing resampling based on the interval
 def interactions_over_time(data, interval='h'):  # Updated 'H' to 'h'
     data.loc[:,'Time'] = pd.to_datetime(data['Time'])
     return data.set_index('Time').resample(interval)['Description'].count()
 
+# Function to count interactions by user
 def interactions_by_user(data):
     return data['User'].value_counts()
 
+# Function to calculate session durations for users
 def session_durations(data):
     data['Time'] = pd.to_datetime(data['Time'])
     data = data.sort_values(by=['User', 'Time'])
@@ -42,11 +50,13 @@ def session_durations(data):
     sessions['Session_Duration'] = sessions['Next_Time'] - sessions['Time']
     return sessions[['User', 'Time', 'Next_Time', 'Session_Duration']]
 
+# Function to calculate interactions by time of day
 def interactions_by_time_of_day(data):
     data.loc[:,'Time'] = pd.to_datetime(data.loc[:,'Time'])
     data.loc[:,'Hour'] = data.loc[:,'Time'].dt.hour
     return data.groupby('Hour')['Description'].count()
 
+# Function to calculate the performance of students based on the ratio of delete operations
 def top_performers(data):
     data = data.drop(columns=['Time', 'Document','Tab'])
     unique_students = data['User'].unique().tolist()
@@ -58,6 +68,8 @@ def top_performers(data):
         ratio = 100 - (delete_count / total_rows) * 100
         students_iterations[student] = ratio
     return students_iterations
+
+# Function to calculate the quality of user interactions based on various actions
 def get_users_adding_interations(data):
     data = data.drop(columns=['Time', 'Document','Tab'])
     unique_students = data['User'].unique().tolist()
