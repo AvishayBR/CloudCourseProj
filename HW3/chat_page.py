@@ -14,6 +14,7 @@ def chat_page():
         # Input field and submit button for user messages
         dcc.Input(id='user-input', type='text', placeholder='Type your message...', style={"width": "80%", "marginRight": "10px"}),
         html.Button('Send', id='submit-button', n_clicks=0, style={"margin": "10px"}, className="setup-button", disabled=True),
+        html.Div(html.P("Type 'clear' in order to clear the chat window", style={"color": "grey"})),
         
         # Hidden div for storing conversation state
         html.Div(id='conversation-state', style={"display": "none"})
